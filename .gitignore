@@ -1,5 +1,6 @@
 app/env/
 app/.env
+app/.community_names
 __pycache__/
 *.pyc
 *.pyo
