@@ -32,7 +32,16 @@
 - **LM Studio**：[下載](https://lmstudio.ai/) → 載入模型 → 左側 **Local Server → Start Server**
 - **Ollama**：[下載](https://ollama.com/) → 終端機執行 `ollama run llama3.2`
 
-推薦繁體中文能力強的模型：`gemma3`、`qwen2.5`、`llama3.2`
+**推薦模型（依優先順序）：**
+
+| 優先 | 模型 | 說明 |
+|------|------|------|
+| ⭐⭐⭐ 首選 | `qwen3-14B` | 繁體中文最強、指令服從最穩 |
+| ⭐⭐ 備選 | `qwen3.5-9B` / `qwen2.5-7B` | 速度較快，品質接近 |
+| ⭐ 可試 | `gemma3`、`gemma4` | 格式保持穩定，繁中尚可 |
+| ❌ 避開 | DeepSeek-R1、QwQ、reasoning-distilled 類 | 思考型模型容易亂改 SRT 格式 |
+
+> 建議優先選用 context ≥ 16K 的模型，避免送出字幕時超出長度限制。
 
 ---
 
