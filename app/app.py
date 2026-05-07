@@ -237,26 +237,36 @@ def run_correction(work_dir, srt_filename, ref_filenames, extra_keywords, progre
         ref_text += f"\n\n【使用者補充關鍵字】\n{extra_keywords.strip()}"
 
     log_lines = []
-
-    def log(msg: str):
-        log_lines.append(msg)
+    corrected = None
 
     try:
-        corrected = corrector.correct(
+        # 逐段校正，每段完成後立即更新進度條與日誌
+        for pct, msg, result in corrector.correct_iter(
             api_base_url=api_base_url,
             model=model,
             srt_content=srt_content,
             api_key=api_key,
             ref_text=ref_text,
             chunk_size=chunk_size,
-            progress_callback=progress,
-            log_callback=log,
-        )
+        ):
+            log_lines.append(msg)
+            progress(pct, desc=msg)
+            if result is None:
+                # 中間進度：即時更新 UI
+                yield "⏳ 校正進行中...", "\n".join(log_lines), WARN_ON
+            else:
+                # 最後一次 yield 帶有完整結果
+                corrected = result
+
     except ValueError as e:
         yield f"❌ 校正驗證失敗：{e}", "\n".join(log_lines), WARN_OFF
         return
     except Exception as e:
         yield f"❌ 校正錯誤：{e}", "\n".join(log_lines), WARN_OFF
+        return
+
+    if corrected is None:
+        yield "❌ 未取得校正結果", "\n".join(log_lines), WARN_OFF
         return
 
     progress(0.98, desc="儲存檔案...")
@@ -267,7 +277,7 @@ def run_correction(work_dir, srt_filename, ref_filenames, extra_keywords, progre
         f.write(corrected)
 
     progress(1.0, desc="完成！")
-    log(f"💾 已儲存：{output_path}")
+    log_lines.append(f"💾 已儲存：{output_path}")
 
     result_msg = (
         f"✅ 校正完成！\n"

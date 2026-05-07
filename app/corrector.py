@@ -129,19 +129,18 @@ def _correct_chunk(
     return _extract_srt_from_response(raw)
 
 
-def correct(
+def correct_iter(
     api_base_url: str,
     model: str,
     srt_content: str,
     api_key: str = "",
     ref_text: str = "",
     chunk_size: int = CHUNK_SIZE,
-    progress_callback: Optional[Callable] = None,
-    log_callback: Optional[Callable[[str], None]] = None,
-) -> str:
+):
     """
-    主要校正函式，分段處理後合併輸出。
-    - log_callback(msg)：每段完成時回呼，用於顯示詳細進度訊息
+    Generator 版校正函式，每段完成後 yield 一次，讓 UI 即時更新。
+    每次 yield: (進度比例 0~1, 訊息字串, 最終結果或 None)
+    最後一次 yield 的第三個值為完整 SRT 字串。
     """
     client = OpenAI(
         base_url=api_base_url.rstrip("/"),
@@ -153,44 +152,29 @@ def correct(
     chunks = _split_chunks(blocks, chunk_size)
     total_chunks = len(chunks)
 
-    if log_callback:
-        log_callback(f"📋 共 {original_count} 個字幕，分成 {total_chunks} 段處理，每段最多 {chunk_size} 個字幕。")
-        if total_chunks > 1:
-            log_callback("⏳ 長文本校正需要較長時間，可開啟 LM Studio 的 Log 視窗確認模型正在運作。")
+    yield 0.05, f"📋 共 {original_count} 個字幕，分成 {total_chunks} 段處理", None
 
     corrected_blocks = []
 
     for i, chunk in enumerate(chunks):
-        seg_num = i + 1
+        seg_num   = i + 1
         seg_start = i * chunk_size + 1
-        seg_end = min((i + 1) * chunk_size, original_count)
+        seg_end   = min((i + 1) * chunk_size, original_count)
+        pct_start = 0.10 + 0.85 * (i / total_chunks)
+        pct_end   = 0.10 + 0.85 * ((i + 1) / total_chunks)
 
-        # 精確進度：留 5% 給讀檔，75% 給校正，20% 給結尾
-        pct = 0.05 + 0.90 * (i / total_chunks)
-        if progress_callback:
-            progress_callback(
-                pct,
-                desc=f"第 {seg_num}/{total_chunks} 段（字幕 {seg_start}～{seg_end}）",
-            )
-        if log_callback:
-            log_callback(f"🔄 開始校正第 {seg_num}/{total_chunks} 段（字幕 {seg_start}～{seg_end}）...")
+        yield pct_start, f"🔄 第 {seg_num}/{total_chunks} 段（字幕 {seg_start}～{seg_end}）...", None
 
-        chunk_text = "\n\n".join(chunk)
+        chunk_text     = "\n\n".join(chunk)
         corrected_text = _correct_chunk(client, model, chunk_text, ref_text)
 
         chunk_blocks = re.split(r"\n{2,}", corrected_text.strip())
         corrected_blocks.extend([b.strip() for b in chunk_blocks if b.strip()])
 
-        if log_callback:
-            log_callback(f"✅ 第 {seg_num}/{total_chunks} 段完成")
+        yield pct_end, f"✅ 第 {seg_num}/{total_chunks} 段完成", None
 
-    if progress_callback:
-        progress_callback(0.97, desc="合併並儲存結果...")
-
-    # 合併所有段落
+    # 驗證字幕數量
     result = "\n\n".join(corrected_blocks) + "\n"
-
-    # 驗證：字幕數量偏差不應超過 5%
     result_count = len(_parse_blocks(result))
     deviation = abs(result_count - original_count) / max(original_count, 1)
     if deviation > 0.05:
@@ -200,4 +184,4 @@ def correct(
             f"建議縮小每段字幕數（目前 {chunk_size}），或確認模型有正確遵守格式規則。"
         )
 
-    return result
+    yield 0.97, "💾 合併完成，準備儲存...", result
