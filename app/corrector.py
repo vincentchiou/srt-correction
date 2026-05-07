@@ -178,25 +178,21 @@ def _correct_chunk(
     ]
     base_params = dict(model=model, messages=messages, temperature=0.1, max_tokens=8192)
 
-    # 依序嘗試各種停用思考模式的參數（不同模型支援不同格式）
-    # 1. Qwen3 / LM Studio：chat_template_kwargs
-    # 2. Anthropic Claude API：thinking disabled
-    # 3. 標準呼叫（無思考控制）
-    for extra in [
+    # 依序嘗試停用思考模式（不同模型支援不同格式）
+    response = None
+    for extra_body in [
         {"chat_template_kwargs": {"enable_thinking": False}},  # Qwen3 / LM Studio
         {"thinking": {"type": "disabled"}},                    # Anthropic
-        {},                                                    # 標準退回
     ]:
         try:
-            response = client.chat.completions.create(
-                **base_params,
-                **({"extra_body": extra} if extra else {}),
-            )
+            response = client.chat.completions.create(**base_params, extra_body=extra_body)
             break
         except Exception:
             continue
-    else:
-        raise RuntimeError("無法呼叫 API，請確認模型已載入並啟動 Local Server")
+
+    if response is None:
+        # 標準呼叫（不帶任何思考控制參數）
+        response = client.chat.completions.create(**base_params)
 
     raw = response.choices[0].message.content or ""
     return _extract_srt_from_response(raw)
