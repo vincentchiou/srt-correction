@@ -41,7 +41,8 @@
 | ⭐ 可試 | `gemma3`、`gemma4` | 格式保持穩定，繁中尚可 |
 | ❌ 避開 | DeepSeek-R1、QwQ、reasoning-distilled 類 | 思考型模型容易亂改 SRT 格式 |
 
-> 建議優先選用 context ≥ 16K 的模型，避免送出字幕時超出長度限制。
+> [!WARNING]
+> 請將上下文長度 Context 設定 16K 左右再導入模型，避免上下文長度不足。
 
 **LM Studio 載入模型建議設定：**
 
@@ -52,6 +53,9 @@
 | Thinking Mode | 關閉（若有此選項） | Qwen3 系列預設開啟，會產生大量隱藏 token 拖慢速度 |
 
 > ⚠️ 上下文若設得太小（如 8192），System prompt 本身就可能超限，導致 `n_keep >= n_ctx` 錯誤。
+
+**參考校正時間：**
+- RTX 5060 Ti + Qwen2.5-14B：2.5 小時錄音約需 **20～30 分鐘**
 
 ---
 
