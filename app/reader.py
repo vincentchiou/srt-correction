@@ -36,17 +36,34 @@ def read_reference_files(file_paths: list) -> str:
 
 
 def _read_pdf(path: str) -> str:
-    """用 PyMuPDF 擷取 PDF 文字。"""
+    """用 PyMuPDF 擷取 PDF 文字，並清理冗餘內容以節省 token。"""
     import fitz  # PyMuPDF
 
     doc = fitz.open(path)
-    pages = []
+    all_lines = []
     for page in doc:
         text = page.get_text()
-        if text.strip():
-            pages.append(text.strip())
+        for line in text.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            # 過濾純數字行（頁碼）
+            if line.isdigit():
+                continue
+            all_lines.append(line)
     doc.close()
-    return "\n".join(pages)
+
+    # 去除連續重複行（頁首頁尾常重複）
+    deduped = []
+    seen_recently: list[str] = []
+    for line in all_lines:
+        if line not in seen_recently:
+            deduped.append(line)
+        seen_recently.append(line)
+        if len(seen_recently) > 10:
+            seen_recently.pop(0)
+
+    return "\n".join(deduped)
 
 
 def _read_docx(path: str) -> str:
