@@ -172,29 +172,31 @@ def _correct_chunk(
         user_content += f"【參考資料】\n{truncated}\n\n"
     user_content += f"【待校正字幕】\n{chunk_text}"
 
-    # 嘗試停用思考模式（部分模型支援）
-    try:
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_content},
-            ],
-            temperature=0.1,
-            max_tokens=8192,
-            extra_body={"thinking": {"type": "disabled"}},  # Anthropic 相容
-        )
-    except Exception:
-        # 不支援 thinking 參數時，退回標準呼叫
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_content},
-            ],
-            temperature=0.1,
-            max_tokens=8192,
-        )
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_content},
+    ]
+    base_params = dict(model=model, messages=messages, temperature=0.1, max_tokens=8192)
+
+    # 依序嘗試各種停用思考模式的參數（不同模型支援不同格式）
+    # 1. Qwen3 / LM Studio：chat_template_kwargs
+    # 2. Anthropic Claude API：thinking disabled
+    # 3. 標準呼叫（無思考控制）
+    for extra in [
+        {"chat_template_kwargs": {"enable_thinking": False}},  # Qwen3 / LM Studio
+        {"thinking": {"type": "disabled"}},                    # Anthropic
+        {},                                                    # 標準退回
+    ]:
+        try:
+            response = client.chat.completions.create(
+                **base_params,
+                **({"extra_body": extra} if extra else {}),
+            )
+            break
+        except Exception:
+            continue
+    else:
+        raise RuntimeError("無法呼叫 API，請確認模型已載入並啟動 Local Server")
 
     raw = response.choices[0].message.content or ""
     return _extract_srt_from_response(raw)
