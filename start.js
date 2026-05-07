@@ -1,4 +1,3 @@
-// 採用 whisper-webui start.js + URL capture pattern
 module.exports = {
   daemon: true,
   run: [
@@ -8,7 +7,7 @@ module.exports = {
         venv: "env",
         path: "app",
         message: [
-          "python app.py"
+          "python app.py --server-port {{port}}"
         ],
         on: [{
           // 擷取 Gradio 啟動後印出的 URL

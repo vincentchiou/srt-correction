@@ -507,5 +507,16 @@ def build_ui():
 
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--server-port", type=int, default=7860)
+    args = parser.parse_args()
+
     app = build_ui()
-    app.launch(server_name="127.0.0.1", theme=gr.themes.Soft(), css=CUSTOM_CSS, js=DARKMODE_JS)
+    app.launch(
+        server_name="127.0.0.1",
+        server_port=args.server_port,
+        theme=gr.themes.Soft(),
+        css=CUSTOM_CSS,
+        js=DARKMODE_JS,
+    )

@@ -58,7 +58,9 @@
 pterm download https://github.com/vincentchiou/srt-correction
 ```
 
-然後點擊 **Install** → **Start** → **Open Web UI**
+然後點擊 **Install** → **Start** → **開啟 Web UI**
+
+> Pinokio 會自動分配可用 Port，點擊按鈕即可開啟，不需手動輸入網址。
 
 ---
 
@@ -77,7 +79,7 @@ chmod +x run.sh && ./run.sh
 
 > 第一次執行自動建環境並安裝套件（約 1～3 分鐘），之後直接啟動。
 
-瀏覽器前往 `http://127.0.0.1:7860`
+瀏覽器前往 `http://127.0.0.1:7860`（Port 預設 7860，若被佔用會自動使用 7861 等）
 
 ---
 
