@@ -19,8 +19,8 @@ _NAMES_FILE = Path(__file__).parent / ".community_names"
 def _community_names() -> str:
     """
     從本機 .community_names 讀取社群教師名單。
-    檔案不存在時靜默略過，不影響其他校正功能。
-    格式：每行一個姓名，# 開頭為注釋。
+    回傳格式化字串；檔案不存在或為空時回傳空字串。
+    名單會放入 user message（非 system prompt），避免撐爆 context。
     """
     if not _NAMES_FILE.exists():
         return ""
@@ -28,7 +28,7 @@ def _community_names() -> str:
     names = [ln.strip() for ln in lines if ln.strip() and not ln.startswith("#")]
     if not names:
         return ""
-    return "▍社群教師名單（ASR 音近字保護）\n" + "、".join(names)
+    return "【社群教師名單（請保護以下人名，勿誤改）】\n" + "、".join(names)
 
 
 # ── System Prompt（前半段） ───────────────────────────────────
@@ -184,8 +184,11 @@ _PROMPT_TAIL = """
 
 直接輸出修正後的完整 SRT 字幕，不要加任何說明、標題或 Markdown 格式。"""
 
-# 組裝完整 system prompt（名單於執行時解碼注入）
-SYSTEM_PROMPT = _PROMPT_HEAD + _community_names() + _PROMPT_TAIL
+# system prompt 不含社群名單（名單在 user message 注入，避免超出 context）
+SYSTEM_PROMPT = _PROMPT_HEAD + _PROMPT_TAIL
+
+# 社群名單快取（模組載入時讀一次）
+_NAMES_CACHE: str = _community_names()
 
 
 def fetch_models(api_base_url: str, api_key: str = "") -> list[str]:
@@ -236,12 +239,18 @@ def _correct_chunk(
     ref_text: str,
 ) -> str:
     """將一段字幕送給 API 校正並回傳結果文字。"""
-    user_content = ""
+    # 組合輔助資料（社群名單 + 參考資料），共用截斷預算
+    aux = ""
+    if _NAMES_CACHE:
+        aux += _NAMES_CACHE + "\n\n"
     if ref_text.strip():
-        truncated = ref_text[:MAX_REF_CHARS]
-        if len(ref_text) > MAX_REF_CHARS:
-            truncated += "\n...(參考資料截斷)"
-        user_content += f"【參考資料】\n{truncated}\n\n"
+        aux += f"【參考資料】\n{ref_text}"
+    user_content = ""
+    if aux.strip():
+        truncated = aux[:MAX_REF_CHARS]
+        if len(aux) > MAX_REF_CHARS:
+            truncated += "\n...(輔助資料截斷)"
+        user_content += truncated + "\n\n"
     user_content += f"【待校正字幕】\n{chunk_text}"
 
     # 嘗試停用思考模式（部分模型支援）
