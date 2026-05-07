@@ -43,6 +43,16 @@
 
 > 建議優先選用 context ≥ 16K 的模型，避免送出字幕時超出長度限制。
 
+**LM Studio 載入模型建議設定：**
+
+| 設定項目 | 建議值 | 說明 |
+|---------|--------|------|
+| 上下文長度（Context Length） | `16384` | System prompt + 參考資料 + 字幕至少需要 10000 token |
+| GPU 卸載（GPU Offload） | 最大值 | 拉到最右確保全部層數跑在 GPU，避免速度掉到個位數 |
+| Thinking Mode | 關閉（若有此選項） | Qwen3 系列預設開啟，會產生大量隱藏 token 拖慢速度 |
+
+> ⚠️ 上下文若設得太小（如 8192），System prompt 本身就可能超限，導致 `n_keep >= n_ctx` 錯誤。
+
 ---
 
 ### 付費 API（效果更穩定，需 API Key）
