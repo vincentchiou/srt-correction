@@ -1,0 +1,5 @@
+{
+  "title": "SRT 字幕校正（LM Studio）",
+  "description": "使用本地 LM Studio AI 免費校正 ASR 課程字幕，支援 PDF 參考資料，不需 API Key",
+  "version": "2.0"
+}
