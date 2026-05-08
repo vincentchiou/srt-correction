@@ -289,7 +289,9 @@ def correct_iter(
 
         yield pct_start, f"🔄 第 {seg_num}/{total_chunks} 段（字幕 {seg_start}～{seg_end}）...", None
 
-        corrected_chunk = _correct_chunk(client, model, chunk, ref_text)
+        # 參考資料只在第一段送出，其餘段省略以節省 input token
+        chunk_ref = ref_text if i == 0 else ""
+        corrected_chunk = _correct_chunk(client, model, chunk, chunk_ref)
         corrected_blocks.extend(corrected_chunk)
 
         yield pct_end, f"✅ 第 {seg_num}/{total_chunks} 段完成", None
