@@ -171,6 +171,8 @@ def _correct_chunk(
             truncated += "\n...(參考資料截斷)"
         user_content += f"【參考資料】\n{truncated}\n\n"
     user_content += f"【待校正字幕】\n{chunk_text}"
+    # /no_think 讓 Qwen3 系列在 chat template 層關閉思考模式，加快速度
+    user_content += "\n/no_think"
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
