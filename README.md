@@ -56,8 +56,7 @@
 > ⚠️ 上下文若設得太小（如 8192），System prompt 本身就可能超限，導致 `n_keep >= n_ctx` 錯誤。
 
 **參考校正時間（最佳化後）：**
-- RTX 3060 12GB + Qwen3.5-9B：2.5 小時錄音約需 **30～50 分鐘**
-- RTX 5060 Ti + Qwen2.5-14B：2.5 小時錄音約需 **15～25 分鐘**
+- RTX 3060 12GB + Qwen3.5-9B：2.5 小時錄音約需 **20 分鐘**
 
 ---
 
@@ -77,12 +76,13 @@
 
 ### 方法一：使用 Pinokio（最簡單，一鍵安裝）
 
-1. 開啟 Pinokio，點左側 **Discover**
-2. 在搜尋框貼上此網址：`https://github.com/vincentchiou/srt-correction`
-3. 點 **Download** → 等待下載完成
-4. 點 **Install** → 等待安裝套件（約 1～3 分鐘）
-5. 點 **Start** → 啟動服務
-6. 點 **開啟 Web UI** 按鈕即可使用
+1. 下載安裝 [Pinokio](https://pinokio.computer/)
+2. 開啟 Pinokio，點左側 **Discover**
+3. 在搜尋框貼上此網址：`https://github.com/vincentchiou/srt-correction`
+4. 點 **Download** → 等待下載完成
+5. 點 **Install** → 等待安裝套件（約 1～3 分鐘）
+6. 點 **Start** → 啟動服務
+7. 點 **開啟 Web UI** 按鈕即可使用
 
 > Pinokio 會自動分配可用 Port，點擊按鈕即可開啟，不需手動輸入網址。
 
