@@ -66,8 +66,8 @@
 
 | 來源 | 建議模型 | API Key 申請 |
 |------|----------|--------------|
-| **OpenAI ChatGPT** | `gpt-4o`、`gpt-4o-mini` | [platform.openai.com](https://platform.openai.com/api-keys) |
-| **Google AI Studio** | `gemini-2.0-flash`、`gemini-1.5-pro` | [aistudio.google.com](https://aistudio.google.com/app/apikey) |
+| **OpenAI ChatGPT** | 依官方建議 | [platform.openai.com](https://platform.openai.com/api-keys) |
+| **Google AI Studio** | 依官方建議 | [aistudio.google.com](https://aistudio.google.com/app/apikey) |
 | **自訂 OpenAI 相容** | 依服務商而定 | Azure OpenAI、Groq、OpenRouter 等 |
 
 ---
